@@ -51,7 +51,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
 
     public function testPathHasInvalidType()
     {
-        $config = array('base_directory' => 'base/directory');
+        $config = array('base_dir' => 'base/directory');
 
         $paths = array(
             'boolean'  => array('location' => false),
@@ -85,7 +85,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
     public function testPathContainsJsExtension()
     {
         $config = array(
-            'base_directory' => 'base/directory',
+            'base_dir' => 'base/directory',
             'paths'          => array(
                 'a' => array(
                     'location' => array(
@@ -134,7 +134,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
         fclose($handle);
 
         $config = array(
-            'base_directory' => $base_dir,
+            'base_dir' => $base_dir,
             'paths'          => array(
                 'namespace'      => $namespace_dir,
                 'namespace_file' => $namespace_file,
@@ -158,17 +158,17 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
             'Incorrect number of method calls on namespace mapping'
         );
         $this->assertContains(
-            array('registerNamespace', array($namespace_dir, 'namespace', true)),
+            array('registerNamespace', array('', $base_dir)),
             $methods,
             'Did not find expected method call'
         );
         $this->assertContains(
-            array('registerNamespace', array($base_dir, '', true)),
+            array('registerNamespace', array('namespace', $namespace_dir)),
             $methods,
             'Did not find expected method call'
         );
         $this->assertContains(
-            array('registerNamespace', array($namespace_file, 'namespace_file', false)),
+            array('registerNamespace', array('namespace_file', $namespace_file)),
             $methods,
             'Did not find expected method call'
         );
@@ -234,7 +234,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
     public function testAssetsNotHiddenByDefault()
     {
         $config = array(
-            'base_directory' => '/home/user/base',
+            'base_dir' => '/home/user/base',
             'paths'          => array(
                 'namespace' => '/home/user/path',
             ),
@@ -262,7 +262,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
     public function testAssetsCanBeHidden()
     {
         $config = array(
-            'base_directory' => '/home/user/base',
+            'base_dir' => '/home/user/base',
             'paths'          => array(
                 'namespace' => '/home/user/path',
             ),
@@ -291,7 +291,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
     public function testOptimizerOmittedIfNotConfigured()
     {
         $config = array(
-            'base_directory' => '/home/user/base',
+            'base_dir' => '/home/user/base',
         );
 
         $container = $this->getContainerBuilder();
@@ -307,7 +307,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
     public function testOptimizerOptionsSet()
     {
         $config = array(
-            'base_directory' => '/home/user/base',
+            'base_dir' => '/home/user/base',
             'optimizer'      => array(
                 'path'    => '/path/to/r.js',
                 'options' => array(
@@ -338,7 +338,7 @@ class HearsayRequireJSExtensionTest extends \PHPUnit_Framework_TestCase
     public function testExceptionOnUnrecognizedBundle()
     {
         $config = array(
-            'base_directory' => '@UnknownBundle/Resources/scripts',
+            'base_dir' => '@UnknownBundle/Resources/scripts',
         );
 
         $container = $this->getContainerBuilder();

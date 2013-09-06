@@ -57,54 +57,35 @@ class NamespaceMapping implements NamespaceMappingInterface
     }
 
     /**
-     * Registers a directory-to-namespace mapping
-     *
-     * @param string                 $path      The path
-     * @param string                 $namespace The namespace
-     * @param boolean                $isDir     Determines if the path is a
-     *                                          directory
-     * @throws PathNotFoundException            If the path was not found
+     * {@inheritDoc}
      */
-    public function registerNamespace($path, $namespace, $isDir = true)
+    public function registerNamespace($namespace, $path)
     {
-        if (is_file($path . '.js')) {
-            $path .= '.js';
-        }
-
-        if (!$realPath = realpath($path)) {
+        if (!$realPath = $this->getRealPath($path)) {
             throw new PathNotFoundException(
-                sprintf(
-                    'The path `%s` was not found.',
-                    $path
-                )
+                sprintf('The path `%s` was not found.', $path)
             );
         }
 
-        $this->namespaces[$realPath] = array(
-            'is_dir'    => $isDir,
-            'namespace' => $namespace,
-        );
+        $this->namespaces[$namespace] = $realPath;
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getModulePath($filename)
     {
-        if (is_file($filename . '.js')) {
-            $filename .= '.js';
-        }
+        $filename = $this->getRealPath($filename);
 
-        if (!$filename = realpath($filename)) {
-            return false;
-        }
+        foreach ($this->namespaces as $namespace => $realPath) {
+            if (strpos($filename, $realPath) === 0) {
+                $basename   = substr($filename, strlen($realPath));
+                $modulePath = $this->basePath . '/' . $namespace;
 
-        foreach ($this->namespaces as $path => $settings) {
-            if (strpos($filename, $path) === 0) {
-                $basename   = substr($filename, strlen($path));
-                $modulePath = $this->basePath . '/' . $settings['namespace'];
+                if (is_dir($realPath) && $basename) {
+                    // To allow to use the bundle with `.coffee` scripts
+                    $basename = preg_replace('#\.[^.]+$#', '.js', $basename);
 
-                if ($settings['is_dir'] && $basename) {
                     $modulePath .= '/' . $basename;
                 }
 
@@ -113,5 +94,26 @@ class NamespaceMapping implements NamespaceMappingInterface
         }
 
         return false;
+    }
+
+    /**
+     * Gets canonicalized absolute pathname
+     *
+     * @param  string         $path The path
+     * @return boolean|string       Returns false on failure, e.g. if the file
+     *                              does not exist, or a string that represents
+     *                              the canonicalized absolute pathname
+     */
+    protected function getRealPath($path)
+    {
+        if (is_file($path . '.js')) {
+            $path .= '.js';
+        }
+
+        if (!$realPath = realpath($path)) {
+            return false;
+        }
+
+        return $realPath;
     }
 }
